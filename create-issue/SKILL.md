@@ -1,15 +1,15 @@
 ---
 name: create-issue
-description: Create a GitHub issue on the board (or a local draft .md when gh lacks permission).
+description: Create a board issue on GitHub (gh or GitHub MCP — same flow) or a temp draft .md when neither is available.
 argument-hint: "Project and what the issue covers"
 disable-model-invocation: true
 ---
 
 # Create issue
 
-Collect inputs, draft a brief issue body, then **probe** `gh` access. **Pass** → create on GitHub, wire project + metadata, verify. **Fail** → write a temporary `.md` only; user finishes in the UI.
+Collect inputs, draft a brief issue body, then run the same **GitHub branch** via **`gh` or GitHub MCP** — identical steps and verify; only the transport differs (many users have one or the other). If neither can run that branch, write a temporary `.md`; user finishes in the UI.
 
-GraphQL and probe commands: [reference.md](reference.md).
+Probe, GraphQL, CLI commands, MCP: [reference.md](reference.md).
 
 ## Collect before drafting
 
@@ -45,14 +45,21 @@ Rules:
 - **No cross-task references** — don't cite other issues, specs, or pages unless the user asked or the dependency is explicit
 - Keep the Orbe logo header when using the Orbe template
 
-## Probe (binary)
+## Delivery channel
 
-After the draft is ready, run the **binary probe** in [reference.md](reference.md) with the collected `owner` and project number.
+After the draft is ready, try **GitHub branch** before [Local branch](#local-branch). Never write a local draft when GitHub branch can complete [Verify (GitHub)](#verify-github).
 
-- **Pass** → [GitHub branch](#github-branch) only. Do not write a local draft file.
-- **Fail** → [Local branch](#local-branch) only. Do not run `gh issue create`, `project item-add`, or field mutations. Tell the user **one line** why the probe failed and point to [reference.md — gh access](reference.md#gh-access).
+**Transport** (same workflow either way):
+
+1. If `command -v gh` succeeds → [probe via `gh`](reference.md#probe-via-gh) with collected `owner` and project number. **Pass** → [GitHub branch](#github-branch) using **`gh`**. **Fail** → try step 2 if GitHub MCP is available; else [Local branch](#local-branch) with one line why → [GitHub access](reference.md#github-access).
+2. Else if GitHub MCP is in the session → [probe via GitHub MCP](reference.md#probe-via-github-mcp) with the same `owner` and project number. **Pass** → [GitHub branch](#github-branch) using **MCP**. **Fail** → [Local branch](#local-branch); one line why.
+3. Else → [Local branch](#local-branch) only.
+
+When `gh` probe fails but MCP is available, run the **MCP probe** before the GitHub branch — do not create an issue on a failed probe.
 
 ## GitHub branch
+
+**Transport:** `gh` commands below, or GitHub MCP with the same numbered steps — [reference.md#github-mcp](reference.md#github-mcp).
 
 **Board repo:** `orbe-soft/orbe-development-board` — every GitHub issue in this workflow lives here.
 
@@ -131,7 +138,7 @@ Return the **absolute path** to the file.
 - [ ] Body follows template; brief; no unrelated references
 - [ ] File exists at the stated absolute path under the temp directory
 - [ ] Board metadata section lists every field the GitHub branch would have set
-- [ ] User received the path, the new-issue link, and one line on why `gh` was skipped (if probe failed)
+- [ ] User received the path, the new-issue link, and one line on why GitHub branch was skipped (no transport, or access failed on both)
 
 ## Defaults (Orbe Development board)
 
