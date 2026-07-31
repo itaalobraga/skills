@@ -1,7 +1,7 @@
 ---
 name: create-issue
 description: Create a GitHub issue, add it to a Project board, and fill board metadata.
-argument-hint: "Repo, project, and what the issue covers"
+argument-hint: "Project and what the issue covers"
 disable-model-invocation: true
 ---
 
@@ -17,12 +17,11 @@ Confirm or infer:
 
 | Input | Required |
 | --- | --- |
-| Repository (`owner/repo`) | yes |
 | Project (`owner` + project number) | yes |
 | Title | yes |
 | Scope (what to build/fix; what's already done) | yes |
 | Assignee | if user names one |
-| Issue type | if repo supports it |
+| Issue type | if board repo supports it |
 | Client, Product, Env | if project has those fields |
 | Started At | default: today (local date, `YYYY-MM-DD`) |
 | Example issue URL | if user points at a pattern to mirror |
@@ -48,10 +47,12 @@ Pass the body via heredoc to `gh issue create`.
 
 ## Create and wire up
 
+**Board repo:** `orbe-soft/orbe-development-board` — every GitHub issue in this workflow lives here.
+
 ### 1. Create the issue
 
 ```bash
-gh issue create --repo OWNER/REPO \
+gh issue create --repo orbe-soft/orbe-development-board \
   --title "TITLE" \
   --assignee ASSIGNEE \   # omit flag if none
   --body "$(cat <<'EOF'
@@ -66,7 +67,7 @@ Capture the issue number and URL from the output.
 
 ```bash
 gh project item-add PROJECT_NUMBER --owner OWNER \
-  --url https://github.com/OWNER/REPO/issues/NUMBER
+  --url https://github.com/orbe-soft/orbe-development-board/issues/NUMBER
 ```
 
 ### 3. Set board metadata
@@ -93,17 +94,18 @@ Use GraphQL `updateProjectV2ItemFieldValue` — see [reference.md](reference.md)
 
 ### 4. Set issue type
 
-If the repo exposes issue types, set via GraphQL `updateIssue` — see [reference.md](reference.md). Skip when the repo has no issue types.
+If board repo exposes issue types, set via GraphQL `updateIssue` — [reference.md](reference.md) with board repo as `OWNER`/`REPO`. Skip when board repo has none.
 
 ## Verify
 
 Re-read the issue and project item. Confirm:
 
 - [ ] Body follows template; brief; no unrelated references
+- [ ] Issue URL is `https://github.com/orbe-soft/orbe-development-board/issues/<number>`
 - [ ] Issue is on the project
 - [ ] Status is `to do`
 - [ ] Client, Product, Env, Started At filled (when those fields exist)
-- [ ] Issue type set (when repo supports it)
+- [ ] Issue type set (when board repo supports it)
 - [ ] Return issue URL to the user
 
 ## Defaults (Orbe Development board)
